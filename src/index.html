@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SZZ Timer</title>
+    <link href="../node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet"/>
+</head>
+<body>
+    <h3 id="model-label" style="margin-left: 10px">SZZ Timer</h3>
+    <div style="display: flex; flex-direction: row; gap: 15px; margin-top: 10px">
+        <div>
+            <canvas id="canvas" width="1000" height="800" style="border:1px solid #000000;"></canvas>
+        </div>
+        <div style="display: flex; flex-direction: column; margin-left: 10px">
+            <label class="form-label" for="model-select">Model</label>
+            <select class="form-select" name="model" id="model-select">
+                <option value="bachelor">Bachelor</option>
+                <option value="master">Master</option>
+            </select>
+        </div>
+        <div style="display: flex; flex-direction: column; margin-left: 10px">
+            <label class="form-label" for="timeOffset">Time offset [min]</label>
+            <input id="timeOffset" type="number" class="form-control"/>
+            <button type="button" id="startButton" class="btn btn-primary" style="margin-top: 15px">Start</button>
+        </div>
+    </div>
+    <script type="module" src="./index.ts"></script>
+</body>
+</html>
