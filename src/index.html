@@ -7,7 +7,7 @@
     <link href="../node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet"/>
 </head>
 <body>
-    <h3 id="model-label" style="margin-left: 10px">SZZ Timer</h3>
+    <h3 id="model-label" style="margin-left: 10px; color: blue">SZZ Timer</h3>
     <div style="display: flex; flex-direction: row; gap: 15px; margin-top: 10px">
         <div>
             <canvas id="canvas" width="1000" height="800" style="border:1px solid #000000;"></canvas>
@@ -15,15 +15,22 @@
         <div style="display: flex; flex-direction: column; margin-left: 10px">
             <label class="form-label" for="model-select">Model</label>
             <select class="form-select" name="model" id="model-select">
-                <option value="bachelor">Bachelor</option>
-                <option value="master">Master</option>
+                <option value="bcFull">Bakalář komplet</option>
+                <option value="bcPrezOnly">Bakalář jen obhajoba</option>
+                <option value="bcExamOnly">Bakalář jen zkoušení</option>
+                <option value="mgrFull">Magistr komplet</option>
+                <option value="mgrPrezOnly">Magistr jen obhajoba</option>
+                <option value="mgrExamOnly">Magistr jen zkoušení</option>
             </select>
         </div>
         <div style="display: flex; flex-direction: column; margin-left: 10px">
-            <label class="form-label" for="timeOffset">Time offset [min]</label>
+            <label class="form-label" for="timeOffset">Časový offset [min]</label>
             <input id="timeOffset" type="number" class="form-control"/>
             <button type="button" id="startButton" class="btn btn-primary" style="margin-top: 15px">Start</button>
         </div>
+	<div style="margin-left: auto; margin-top: auto; padding: 5px;">
+	  <a href="https://github.com/CCMi-FIT/SZZ-Timer">SZZ Timer</a> verze: 1.0
+	</div>
     </div>
     <script type="module" src="./index.ts"></script>
 </body>

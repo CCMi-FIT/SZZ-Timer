@@ -1,42 +1,43 @@
 import _ from "lodash";
 import {match} from "ts-pattern";
 import type {Input, Part} from "./model";
-import { totalDuration } from "./model";
-import inputBc from "./input-bc";
-import inputMgr from "./input-mgr";
+import {totalDuration} from "./model";
+import {bcFull, bcPrezOnly, bcExamOnly, mgrFull, mgrPrezOnly, mgrExamOnly} from "./inputs";
 
 const wh = window.innerHeight - 50;
 
-const barXOffset = 50;
+const barXOffset = 80;
 const barYOffset = 50;
 const barWidth = 200;
 const barHeight = wh - barYOffset * 2;
 const barX2 = barXOffset + barWidth;
 
-const pointerX1 = barXOffset - 20;
-const pointerX2 = barX2 + 20;
+const pointerX1 = barXOffset;
+const pointerX2 = barX2;
 let pointerY = barYOffset;
 
 let startTime = Date.now();
-let timeOffsetSec = 0;
+let timeOffsetMs = 0;
 
 type PartInfo = Part & {
     start: number;
     end: number;
 };
 
-type Rectangle = {
+type Section = {
     y1: number;
     y2: number;
     color: string;
     name: string;
+    start: Date;
+    duration: number;
 };
 
 type Data = {
     modelName: string;
     totalDurationInSecs: number;
     yPerSec: number;
-    rectangles: Rectangle[];
+    sections: Section[];
 };
 
 
@@ -62,25 +63,38 @@ function drawBar(
     canvas: HTMLCanvasElement,
     ctx: CanvasRenderingContext2D
 ) {
-    function drawBar() {
-        data.rectangles.forEach((rect) => {
-            ctx.fillStyle = rect.color;
-            ctx.fillRect(barXOffset, rect.y1, barWidth, rect.y2 - rect.y1);
+    function drawSections() {
+        data.sections.forEach((section) => {
+            ctx.fillStyle = section.color;
+            ctx.fillRect(barXOffset, section.y1, barWidth, section.y2 - section.y1);
             // Render label
             ctx.fillStyle = "#101010";
             ctx.font = "20px Arial";
-            ctx.fillText(rect.name, barXOffset + 10, rect.y1 + 30);
+            ctx.fillText(section.name, barXOffset + 10, section.y1 + 30);
+            // Render duration
+            ctx.font = "14px Arial";
+            ctx.fillText(section.duration.toString() + " min", barXOffset - 50, section.y1 + (section.y2 - section.y1) / 2);
+            // Render section time start
+            ctx.fillText(section.start.toTimeString().slice(0, 5), barX2 +10, section.y1 + 5);
         });
     }
 
     getModelLabelEl().innerText = data.modelName;
-    const now = Date.now();
-    const elapsed = Math.round((now + (timeOffsetSec * 1000) - startTime) / 1000);
+
+    const elapsed = Math.round((Date.now() - startTime) / 1000);
     pointerY = barYOffset + elapsed * data.yPerSec;
     ctx.fillStyle = "white";
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawBar();
+    drawSections();
+    // Render last section end time
+    const lastSection = _.last(data.sections)!;
+    const endTime = new Date(lastSection.start.getTime() + lastSection.duration * 60 * 1000);
+    ctx.fillStyle = "#101010";
+    ctx.font = "14px Arial";
+    ctx.fillText(endTime.toTimeString().slice(0, 5), barX2 +10, lastSection.y2 + 5);
 
+    // Render pointer line
+    ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(pointerX1, pointerY);
     ctx.lineTo(pointerX2, pointerY);
@@ -89,18 +103,14 @@ function drawBar(
 }
 
 function getInput(): Input {
-    const selected = getModelSelectEl().value;
-    console.log(selected);
     return match(getModelSelectEl().value)
-        .with("bachelor", () => inputBc)
-        .with("master", () => inputMgr)
+        .with("bcFull", () => bcFull)
+        .with("bcPrezOnly", () => bcPrezOnly)
+        .with("bcExamOnly", () => bcExamOnly)
+        .with("mgrFull", () => mgrFull)
+        .with("mgrPrezOnly", () => mgrPrezOnly)
+        .with("mgrExamOnly", () => mgrExamOnly)
         .otherwise(() => { throw new Error("Unknown model"); });
-}
-
-function resetTime() {
-    const val = getInputEl().valueAsNumber;
-    startTime = Date.now();
-    timeOffsetSec = val * 60;
 }
 
 function mkData(): Data {
@@ -128,20 +138,33 @@ function mkData(): Data {
 
     const yPerMinute = barHeight / totalDurationInMins;
 
-    const rectangles: Rectangle[] = partsInfos.map((info) => ({
-        y1: Math.round(barYOffset + yPerMinute * info.start),
-        y2: Math.round(barYOffset + yPerMinute * info.end),
-        color: info.color,
-        name: info.name,
-    }));
+    let sectionStartTime = startTime;
+    const sections: Section[] = partsInfos.map((info) => {
+        const res: Section = {
+            y1: Math.round(barYOffset + yPerMinute * info.start),
+            y2: Math.round(barYOffset + yPerMinute * info.end),
+            color: info.color,
+            name: info.name,
+            start: new Date(sectionStartTime),
+            duration: info.duration,
+        };
+        sectionStartTime = sectionStartTime + (info.duration * 60 * 1000);
+        return res;
+    });
 
     return {
         modelName: input.name,
         totalDurationInSecs: totalDurationInMins * 60,
         yPerSec: yPerMinute / 60,
-        rectangles,
+        sections,
     };
 
+}
+
+function resetTime() {
+    const offsetMins = getInputEl().valueAsNumber;
+    timeOffsetMs = offsetMins * 60 * 1000;
+    startTime = Date.now() - timeOffsetMs;
 }
 
 function main(): void {
@@ -160,6 +183,6 @@ function main(): void {
     }
 }
 
-window!.addEventListener("load", () => (getStartButtonEl().onclick = resetTime));
 
+window!.addEventListener("load", () => (getStartButtonEl().onclick = resetTime));
 main();

@@ -7,17 +7,17 @@
   "scripts": {
     "check": "tsc --noEmit",
     "start": "parcel",
-    "build": "parcel build"
+    "build": "parcel build --public-url ./"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Robert Pergl",
+  "license": "Apache2",
   "devDependencies": {
     "@parcel/transformer-typescript-tsc": "^2.13.3",
-    "@types/lodash": "^4.17.15",
+    "@types/lodash": "^4.17.16",
     "bootstrap": "^5.3.3",
     "lodash": "^4.17.21",
     "parcel": "^2.13.3",
     "ts-pattern": "^5.6.2",
-    "typescript": "^5.7.3"
+    "typescript": "^5.8.2"
   }
 }
